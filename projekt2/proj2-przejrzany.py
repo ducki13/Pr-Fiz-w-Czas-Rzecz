@@ -306,7 +306,7 @@ class Triangle(SceneObject):
         self.t += self.dt
 
     #def init_zad3(self, F, p):
-    def zad3(self, nr, nrs):
+    def zad3(self, stable, nr, nrs):
         # print("t")
         # print(str(self.t))
         # #print("@@@@@@@@@@@@@")
@@ -323,12 +323,12 @@ class Triangle(SceneObject):
 
         #W - omega matrix, w - omega vector
         for x in nrs:
-            self.vertices[x] = self.R.mult(self.vertices[x])
-        #    print "Wierzcholek", self.vertices[x]
+            self.vertices[x] = self.R.mult(self.vertices[x].sub(self.vertices[stable])).add(self.vertices[stable])
+            print "Wierzcholek", self.vertices[x]
         #print "Macierz", self.R
         
         #L_{n+1} = L_{n} + vertex x F * dt
-        self.L = self.L.add(Vector.vector_product(self.vertices[nr], self.F).mult(self.dt))
+        self.L = self.L.add(Vector.vector_product(self.vertices[nr].sub(self.vertices[stable]), self.F).mult(self.dt))
 
         #R_{n+1} = R_{n} + W_{n} * R_{n} * dt
         self.R = self.R.add(self.W.mult(self.R).mult_number(self.dt))
@@ -354,7 +354,7 @@ class Triangle(SceneObject):
         #self.R = self.R.gramm_schmidt()
         #self.R_trans = self.R.gramm_schmidt()
 
-        m = self.R.mult(self.R.transpose())
+        #m = self.R.mult(self.R.transpose())
         #print("###############")
         #print(m.M)
         #print("###############")
@@ -365,7 +365,7 @@ class Triangle(SceneObject):
         v2 = self.vertices[stable].sub(self.vertices[nrs[1]])
         force = Vector.vector_product(v1, v2)
         self.set_force(force.normalize())
-        self.zad3(nr, nrs)
+        self.zad3(stable, nr, nrs)
 
 
 def display_triangle(csys, t):
@@ -402,11 +402,10 @@ def main():
     #zakres widzenia, aspect ratio, obszar w którym mogą sie pojawic obiekty
     gluPerspective(70, (display[0]/display[1]), -10.0, 10.0)
 
-    glTranslatef(0.0, 0.0, -15.0) # Przesuwa kamerę w stosunku
-    # do środka układu współrzędnych.
+    glTranslatef(0.0, 0.0, -10.0)
 
-    glRotatef(150.0, 0.0, 1.0, 0.0) # Funkcja obracająca kamerę. Pierwsze
-    # zmienna to kąt obrotu, pozostałe jego oś.
+    #please, adjust angle to see the best results for each task
+    glRotatef(150.0, 0.0, 1.0, 0.0)
 
     #counterclowise
     tri = Triangle(vertices=[Vector(x=0, y=0, z=0), Vector(x=0, y=-1, z=1), Vector(x=0, y=2, z=1)], masses=(1, 3, 5))
@@ -420,7 +419,7 @@ def main():
     #initial I matrix
     tri.countI()
     tri.I_zero_inv = tri.I.inverse()
-
+    pygame.time.wait(120)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -431,21 +430,21 @@ def main():
         display_triangle(csys, tri)
         pygame.display.flip()
         pygame.time.wait(120)
-        #for zad 1-2 pygame.time.wait(60)
-        #for zad 3-6 pygame.time.wait(120)
+        #for zad 1-2 best results with pygame.time.wait(60)
+        #for zad 3-6 best results with pygame.time.wait(120)
 
         #zad1
         #tri.zad1()
         #zad2
         #tri.zad2()
         #zad3
-        #tri.zad3(1, [1, 2])
+        tri.zad3(0, 1, [1, 2])
         #zad4
-        #tri.zad3(2, [1, 2])
+        #tri.zad3(0, 2, [1, 2])
         #zad5
-        #tri.zad3(0, [0, 1])
+        #tri.zad3(2, 0, [0, 1])
         #zad6
-        tri.zad4(0, 2, [1, 2])
+        #tri.zad4(0, 2, [1, 2])
 
 
 main()
